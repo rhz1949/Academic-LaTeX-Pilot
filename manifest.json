@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Overleaf Intelligent Translator",
+  "version": "1.0.0",
+  "description": "Polish Chinese LaTeX snippets and provide English translations within Overleaf.",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": [
+    "https://www.overleaf.com/*",
+    "*://generativelanguage.googleapis.com/*",
+    "*://api.openai.com/*",
+    "https://api.deepseek.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Overleaf Intelligent Translator"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.overleaf.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
