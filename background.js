@@ -14,9 +14,10 @@ OUTPUT JSON format:
 }`;
 
 const GEMINI_MODEL = 'gemini-1.5-flash-latest';
+const GEMINI_API_VERSION = 'v1';
 
 const buildGeminiRequest = (prompt, apiKey) => {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const body = {
     contents: [
       {
