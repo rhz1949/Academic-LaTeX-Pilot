@@ -99,11 +99,29 @@
   font-size: 14px;
 }
 
+.ai-trans-textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+  font-size: 13px;
+  font-family: inherit;
+  color: #333;
+  background: #fff;
+  box-sizing: border-box;
+}
+
 .ai-trans-text {
   white-space: pre-wrap;
   word-break: break-word;
   font-size: 13px;
   color: #333;
+}
+
+.ai-trans-translate-btn {
+  align-self: flex-start;
 }
 
 .ai-trans-footer {

@@ -33,7 +33,7 @@ const insertButton = () => {
   button.textContent = 'Trans';
   button.addEventListener('click', () => {
     openSidebar();
-    handleTranslate();
+    handlePolish();
   });
 
   const referenceButton = Array.from(toolbar.querySelectorAll('button')).find((btn) =>
@@ -209,9 +209,10 @@ const buildSidebar = () => {
   polishedSection.className = 'ai-trans-section';
   const polishedTitle = document.createElement('h4');
   polishedTitle.textContent = 'Polished Chinese';
-  const polishedText = document.createElement('div');
-  polishedText.className = 'ai-trans-text';
-  polishedText.id = 'ai-trans-polished';
+  const polishedText = document.createElement('textarea');
+  polishedText.className = 'ai-trans-textarea';
+  polishedText.id = 'ai-trans-polished-input';
+  polishedText.placeholder = '润色后的中文会显示在这里，您可以修改后再翻译';
   polishedSection.appendChild(polishedTitle);
   polishedSection.appendChild(polishedText);
 
@@ -225,9 +226,15 @@ const buildSidebar = () => {
   translatedSection.appendChild(translatedTitle);
   translatedSection.appendChild(translatedText);
 
+  const translateBtn = document.createElement('button');
+  translateBtn.className = 'ai-trans-btn-primary ai-trans-translate-btn';
+  translateBtn.textContent = 'Translate to EN';
+  translateBtn.addEventListener('click', () => handleTranslate());
+
   body.appendChild(statusEl);
   body.appendChild(errorEl);
   body.appendChild(polishedSection);
+  body.appendChild(translateBtn);
   body.appendChild(translatedSection);
 
   const footer = document.createElement('div');
@@ -236,7 +243,10 @@ const buildSidebar = () => {
   const copyCnBtn = document.createElement('button');
   copyCnBtn.className = 'ai-trans-btn-secondary';
   copyCnBtn.textContent = 'Copy CN';
-  copyCnBtn.addEventListener('click', () => copyText(polishedText.textContent));
+  copyCnBtn.addEventListener('click', () => {
+    const input = document.getElementById('ai-trans-polished-input');
+    copyText(input ? input.value : polishedText.textContent);
+  });
 
   const copyEnBtn = document.createElement('button');
   copyEnBtn.className = 'ai-trans-btn-secondary';
@@ -285,11 +295,14 @@ const setError = (message) => {
   if (errorEl) errorEl.textContent = message || '';
 };
 
-const renderResult = (data) => {
-  const polished = document.getElementById('ai-trans-polished');
+const renderPolished = (text) => {
+  const polishedInput = document.getElementById('ai-trans-polished-input');
+  if (polishedInput) polishedInput.value = text || '';
+};
+
+const renderTranslated = (text) => {
   const translated = document.getElementById('ai-trans-translated');
-  if (polished) polished.textContent = data.polished_cn || '';
-  if (translated) translated.textContent = data.translated_en || '';
+  if (translated) translated.textContent = text || '';
 };
 
 const copyText = async (text) => {
@@ -303,7 +316,7 @@ const copyText = async (text) => {
   }
 };
 
-const handleTranslate = async () => {
+const handlePolish = async () => {
   const currentSelection = getSelectedText();
   if (currentSelection) {
     lastSelection = { text: currentSelection, context: getContextText() };
@@ -323,12 +336,13 @@ const handleTranslate = async () => {
   }
 
   setError('');
-  setStatus('Processing with AI…');
-  renderResult({ polished_cn: '', translated_en: '' });
+  setStatus('润色中…');
+  renderPolished('');
+  renderTranslated('');
 
   chrome.runtime.sendMessage(
     {
-      type: 'ai-translate',
+      type: 'ai-polish',
       target_text: targetText,
       context_text: contextText,
       api_key: settings.apiKey,
@@ -345,8 +359,52 @@ const handleTranslate = async () => {
         setStatus('Failed');
         return;
       }
-      renderResult(response.data);
-      setStatus('Done');
+      renderPolished(response.data.polished_cn || '');
+      setStatus('润色完成，请校对后点击翻译');
+    }
+  );
+};
+
+const handleTranslate = async () => {
+  const polishedInput = document.getElementById('ai-trans-polished-input');
+  const polishedText = polishedInput ? polishedInput.value.trim() : '';
+  if (!polishedText) {
+    setError('请先完成并确认润色后的中文文本');
+    return;
+  }
+
+  const settings = await loadSettings();
+  if (!settings.apiKey) {
+    setError('请先在设置中填写 API Key。');
+    toggleSettings();
+    return;
+  }
+
+  setError('');
+  setStatus('翻译中…');
+  renderTranslated('');
+
+  chrome.runtime.sendMessage(
+    {
+      type: 'ai-translate',
+      polished_text: polishedText,
+      context_text: lastSelection.context || '',
+      api_key: settings.apiKey,
+      provider: settings.provider || DEFAULT_PROVIDER,
+    },
+    (response) => {
+      if (chrome.runtime.lastError) {
+        setError(`Extension error: ${chrome.runtime.lastError.message}`);
+        setStatus('Failed');
+        return;
+      }
+      if (!response || !response.success) {
+        setError(response && response.error ? response.error : 'Unknown error');
+        setStatus('Failed');
+        return;
+      }
+      renderTranslated(response.data.translated_en || '');
+      setStatus('翻译完成');
     }
   );
 };
