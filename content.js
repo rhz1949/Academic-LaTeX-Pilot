@@ -163,8 +163,12 @@ const buildSidebar = () => {
   const openaiOption = document.createElement('option');
   openaiOption.value = 'openai';
   openaiOption.textContent = 'OpenAI';
+  const deepseekOption = document.createElement('option');
+  deepseekOption.value = 'deepseek';
+  deepseekOption.textContent = 'DeepSeek';
   providerSelect.appendChild(geminiOption);
   providerSelect.appendChild(openaiOption);
+  providerSelect.appendChild(deepseekOption);
 
   const keyLabel = document.createElement('label');
   keyLabel.textContent = 'API Key';

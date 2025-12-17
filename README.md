@@ -5,7 +5,7 @@ Overleaf Intelligent Translator 是一款基于 Manifest V3 的 Chrome 插件，
 ## 功能亮点
 - 在 Overleaf 顶部工具栏插入 `Trans` 按钮，点击后自动读取当前选中的文本以及前文上下文。
 - 侧边栏显示 AI 润色后的中文与英文 LaTeX 翻译，支持复制与错误提示。
-- 支持 Gemini 与 OpenAI，API Key 可通过插件弹窗或侧边栏设置保存到本地。
+- 支持 Gemini、OpenAI 与 DeepSeek（base_url: https://api.deepseek.com），API Key 可通过插件弹窗或侧边栏设置保存到本地。
 
 ## 安装步骤
 1. 在浏览器地址栏输入 `chrome://extensions/` 打开扩展管理页面并开启右上角的 **开发者模式**。
@@ -13,7 +13,7 @@ Overleaf Intelligent Translator 是一款基于 Manifest V3 的 Chrome 插件，
 3. 加载完成后，工具栏会出现插件图标；如需固定，请在扩展管理中点击固定图钉。
 
 ## API Key 配置
-- 方式一：点击浏览器工具栏中的插件图标，弹出窗口内输入 OpenAI 或 Gemini 的 API Key，并选择 Provider 后保存。
+- 方式一：点击浏览器工具栏中的插件图标，弹出窗口内输入 Gemini/OpenAI/DeepSeek 的 API Key，并选择 Provider 后保存。
 - 方式二：在 Overleaf 页面打开侧边栏后，点击齿轮图标填写 API Key；保存后会同步写入 `chrome.storage.local`。
 
 ## 使用指南
@@ -28,6 +28,7 @@ Overleaf Intelligent Translator 是一款基于 Manifest V3 的 Chrome 插件，
   - 免费 Key 有时仅支持 `v1beta` 版本或不带 `-latest` 后缀的 `gemini-1.5-flash`。插件现已内置自动回退逻辑，先尝试 `v1/gemini-1.5-flash-latest`，若收到 404 会依次改用 `v1/gemini-1.5-flash` 与 `v1beta/gemini-1.5-flash`，无需手动配置。
   - 若依然报错，请在 Google AI Studio 查看账户配额与模型可见性，或重新生成 API Key 后再试。
 - **点击按钮后提示未选择文本**：在 CodeMirror 编辑器中点击按钮会取消当前高亮，插件会自动缓存最近一次有效的选区。确保先用鼠标拖拽或键盘选中中文文本，再点击 **Trans**，即可使用缓存的选区发起翻译。
+- **DeepSeek 无法访问**：请确认账号权益允许调用 `https://api.deepseek.com/v1/chat/completions`，并确保在 Provider 中选择 DeepSeek 后填入有效 Key。
 
 ## 开发/调试提示
 - 侧边栏与按钮的样式定义在 `styles.css`，可根据需要调整配色或布局。

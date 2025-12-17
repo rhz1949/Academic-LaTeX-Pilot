@@ -45,6 +45,20 @@ const buildOpenAIRequest = (prompt, apiKey) => {
   return { url, body, headers };
 };
 
+const buildDeepSeekRequest = (prompt, apiKey) => {
+  const url = 'https://api.deepseek.com/v1/chat/completions';
+  const body = {
+    model: 'deepseek-chat',
+    messages: [{ role: 'system', content: prompt }],
+    temperature: 0.3,
+  };
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
+  return { url, body, headers };
+};
+
 const parseGeminiResponse = async (response) => {
   const data = await response.json();
   if (!data.candidates || !data.candidates.length) {
@@ -96,6 +110,20 @@ const handleRequest = async ({ target_text, context_text, api_key, provider }) =
       }
     }
     throw new Error(lastError || 'Gemini error: Unknown issue');
+  }
+
+  if (provider === 'deepseek') {
+    const { url, body, headers } = buildDeepSeekRequest(prompt, api_key);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`DeepSeek error: ${errorText}`);
+    }
+    return parseOpenAIResponse(response);
   }
 
   const { url, body, headers } = buildOpenAIRequest(prompt, api_key);
