@@ -13,8 +13,10 @@ OUTPUT JSON format:
   "translated_en": "..."
 }`;
 
+const GEMINI_MODEL = 'gemini-1.5-flash-latest';
+
 const buildGeminiRequest = (prompt, apiKey) => {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const body = {
     contents: [
       {

@@ -256,6 +256,14 @@ const toggleSettings = () => {
   panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
 };
 
+let lastSelection = { text: '', context: '' };
+
+const captureSelection = () => {
+  const text = getSelectedText();
+  if (!text) return;
+  lastSelection = { text, context: getContextText() };
+};
+
 const applySettingsToUI = (settings) => {
   const providerSelect = document.getElementById('ai-trans-provider');
   const keyInput = document.getElementById('ai-trans-api-key');
@@ -292,12 +300,17 @@ const copyText = async (text) => {
 };
 
 const handleTranslate = async () => {
-  const targetText = getSelectedText();
+  const currentSelection = getSelectedText();
+  if (currentSelection) {
+    lastSelection = { text: currentSelection, context: getContextText() };
+  }
+
+  const targetText = lastSelection.text;
   if (!targetText) {
     alert('请选择需要润色的中文文本');
     return;
   }
-  const contextText = getContextText();
+  const contextText = lastSelection.context || '';
   const settings = await loadSettings();
   if (!settings.apiKey) {
     setError('请先在设置中填写 API Key。');
@@ -339,5 +352,9 @@ document.addEventListener('visibilitychange', () => {
     insertButton();
   }
 });
+
+document.addEventListener('mouseup', captureSelection);
+document.addEventListener('keyup', captureSelection);
+document.addEventListener('selectionchange', captureSelection);
 
 startObserving();
