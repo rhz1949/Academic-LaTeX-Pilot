@@ -24,7 +24,9 @@ Overleaf Intelligent Translator 是一款基于 Manifest V3 的 Chrome 插件，
 5. 如遇请求失败，侧边栏会以红色文字显示错误信息；请检查 API Key、网络或稍后重试。
 
 ## 常见问题排查
-- **Gemini 404 模型错误**：请确认已在设置中选择 Gemini，并填入有效的 Gemini API Key。插件已改用官方 v1 版本的 `gemini-1.5-flash-latest` 端点，如仍报错可在 Google AI Studio 确认该 Key 拥有对应模型的访问权限或尝试重新生成 Key。
+- **Gemini 404 模型错误**：
+  - 免费 Key 有时仅支持 `v1beta` 版本或不带 `-latest` 后缀的 `gemini-1.5-flash`。插件现已内置自动回退逻辑，先尝试 `v1/gemini-1.5-flash-latest`，若收到 404 会依次改用 `v1/gemini-1.5-flash` 与 `v1beta/gemini-1.5-flash`，无需手动配置。
+  - 若依然报错，请在 Google AI Studio 查看账户配额与模型可见性，或重新生成 API Key 后再试。
 - **点击按钮后提示未选择文本**：在 CodeMirror 编辑器中点击按钮会取消当前高亮，插件会自动缓存最近一次有效的选区。确保先用鼠标拖拽或键盘选中中文文本，再点击 **Trans**，即可使用缓存的选区发起翻译。
 
 ## 开发/调试提示

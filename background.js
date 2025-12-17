@@ -13,11 +13,14 @@ OUTPUT JSON format:
   "translated_en": "..."
 }`;
 
-const GEMINI_MODEL = 'gemini-1.5-flash-latest';
-const GEMINI_API_VERSION = 'v1';
+const GEMINI_ENDPOINTS = [
+  { version: 'v1', model: 'gemini-1.5-flash-latest' }, // standard access
+  { version: 'v1', model: 'gemini-1.5-flash' }, // remove -latest suffix
+  { version: 'v1beta', model: 'gemini-1.5-flash' }, // free-tier compatibility
+];
 
-const buildGeminiRequest = (prompt, apiKey) => {
-  const url = `https://generativelanguage.googleapis.com/${GEMINI_API_VERSION}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+const buildGeminiRequest = (prompt, apiKey, { version, model }) => {
+  const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;
   const body = {
     contents: [
       {
@@ -72,17 +75,27 @@ const handleRequest = async ({ target_text, context_text, api_key, provider }) =
   }
   const prompt = SYSTEM_PROMPT({ target_text, context_text });
   if (provider === 'gemini') {
-    const { url, body } = buildGeminiRequest(prompt, api_key);
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
+    let lastError = null;
+    for (const endpoint of GEMINI_ENDPOINTS) {
+      const { url, body } = buildGeminiRequest(prompt, api_key, endpoint);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        return parseGeminiResponse(response);
+      }
+
       const errorText = await response.text();
-      throw new Error(`Gemini error: ${errorText}`);
+      lastError = `Gemini error (${endpoint.version}/${endpoint.model}): ${errorText}`;
+
+      if (response.status !== 404) {
+        break;
+      }
     }
-    return parseGeminiResponse(response);
+    throw new Error(lastError || 'Gemini error: Unknown issue');
   }
 
   const { url, body, headers } = buildOpenAIRequest(prompt, api_key);
